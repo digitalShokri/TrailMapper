@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trail Mapper - GPS & Elevation Analyzer</title>
+    <title>Trail Mapper Pro - GPS & Trail Analysis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -23,7 +23,7 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -86,6 +86,126 @@
             background: #f0fdf4;
         }
         
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 0;
+        }
+        
+        .map-section {
+            position: relative;
+        }
+        
+        #map {
+            height: 600px;
+            background: #f0f0f0;
+        }
+        
+        .side-panel {
+            background: #f7f9fc;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .panel-section {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .panel-section h3 {
+            font-size: 1.1em;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .stats-compact {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.75em;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .trail-info {
+            background: #e6fffa;
+            border-left: 4px solid #10b981;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .trail-info h4 {
+            color: #065f46;
+            margin-bottom: 8px;
+        }
+        
+        .trail-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .badge-difficulty {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-surface {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-type {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+        
+        .chart-container {
+            padding: 30px;
+            background: #f7f9fc;
+        }
+        
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #elevationChart {
+            max-height: 300px;
+        }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -114,43 +234,14 @@
             letter-spacing: 1px;
         }
         
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #2d3748;
-        }
-        
         .stat-unit {
             font-size: 0.8em;
             color: #718096;
             margin-left: 5px;
         }
         
-        #map {
-            height: 500px;
-            margin: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .chart-container {
-            padding: 30px;
-            background: #f7f9fc;
-        }
-        
-        .chart-wrapper {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        #elevationChart {
-            max-height: 300px;
-        }
-        
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         .loading {
@@ -158,13 +249,77 @@
             padding: 20px;
             color: #718096;
         }
+        
+        .layer-info {
+            background: #f0fdf4;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #065f46;
+        }
+        
+        .match-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .match-percentage {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #92400e;
+        }
+        
+        .trail-search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .trail-item {
+            padding: 8px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .trail-item:hover {
+            background: #f0fdf4;
+        }
+        
+        .trail-item-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .trail-item-details {
+            font-size: 0.85em;
+            color: #718096;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .side-panel {
+                max-height: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🗺️ Trail Mapper</h1>
-            <p>Visualize GPS trails with distance and elevation analysis</p>
+            <h1>🗺️ Trail Mapper Pro</h1>
+            <p>Advanced GPS trail analysis with OpenTrailMap integration</p>
         </div>
         
         <div class="upload-section">
@@ -178,6 +333,67 @@
         </div>
         
         <div id="results" class="hidden">
+            <div class="main-content">
+                <div class="map-section">
+                    <div id="map"></div>
+                </div>
+                
+                <div class="side-panel">
+                    <!-- Layer Control Info -->
+                    <div class="layer-info">
+                        💡 Use the layer control (top-right) to switch between map styles and overlays
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="panel-section">
+                        <h3>📊 Track Statistics</h3>
+                        <div class="stats-compact">
+                            <div class="stat-item">
+                                <div class="stat-label">Distance</div>
+                                <div class="stat-value"><span id="quickDistance">0</span> mi</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Elevation Gain</div>
+                                <div class="stat-value"><span id="quickElevGain">0</span> ft</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Max Elevation</div>
+                                <div class="stat-value"><span id="quickMaxElev">0</span> ft</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Avg Grade</div>
+                                <div class="stat-value"><span id="avgGrade">0</span>%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trail Match Section -->
+                    <div class="panel-section">
+                        <h3>🎯 Trail Match Analysis</h3>
+                        <div id="trailMatchContent">
+                            <div class="loading">Analyzing trail data...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Nearby Trails -->
+                    <div class="panel-section">
+                        <h3>🥾 Nearby Trails</h3>
+                        <div id="nearbyTrails">
+                            <div class="loading">Searching for trails...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trail Conditions -->
+                    <div class="panel-section">
+                        <h3>🌤️ Trail Conditions</h3>
+                        <div id="trailConditions">
+                            <p style="color: #718096; font-size: 0.9em;">Upload a track to see trail conditions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Distance</h3>
@@ -223,8 +439,7 @@
                 </div>
             </div>
             
-            <div id="map"></div>
-            
+            <!-- Elevation Chart -->
             <div class="chart-container">
                 <div class="chart-wrapper">
                     <canvas id="elevationChart"></canvas>
@@ -235,49 +450,78 @@
     
     <script>
         let map = null;
-        let polyline = null;
+        let userTrackPolyline = null;
+        let matchedTrailPolyline = null;
         let elevationChart = null;
+        let nearbyTrailsLayer = null;
+        let currentCoordinates = [];
+        let currentElevations = [];
         
-        // ========== ADJUSTABLE MAP OPTIONS ==========
-        const MAP_CONFIG = {
-            // Initial zoom level (1-18, higher = more zoomed in)
-            defaultZoom: 13,
-            
-            // Padding around the trail bounds (pixels)
-            boundsPadding: [50, 50],
-            
-            // Maximum zoom level allowed
-            maxZoom: 18,
-            
-            // Minimum zoom level allowed
-            minZoom: 3,
-            
-            // Delay before fitting bounds (milliseconds)
-            fitBoundsDelay: 100,
-            
-            // Animation duration for zoom
-            zoomAnimationDuration: 0.25,
-            
-            // Alternative tile providers (uncomment one to use)
-            tileProvider: 'openstreetmap', // options: 'openstreetmap', 'cartodb', 'stamen'
-        };
-        
-        // Tile provider URLs
-        const TILE_PROVIDERS = {
-            openstreetmap: {
-                url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                attribution: '© OpenStreetMap contributors'
+        // Map layer configurations
+        const MAP_LAYERS = {
+            osm: {
+                name: 'OpenStreetMap',
+                layer: () => L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 18
+                })
             },
-            cartodb: {
-                url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                attribution: '© CartoDB'
+            osmTopo: {
+                name: 'OpenTopoMap',
+                layer: () => L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenTopoMap contributors',
+                    maxZoom: 17
+                })
+            },
+            esriSatellite: {
+                name: 'Satellite',
+                layer: () => L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© Esri',
+                    maxZoom: 18
+                })
+            },
+            cartoDB: {
+                name: 'CartoDB Light',
+                layer: () => L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+                    attribution: '© CartoDB',
+                    maxZoom: 18
+                })
             },
             stamen: {
-                url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
-                attribution: '© Stamen Design'
+                name: 'Terrain',
+                layer: () => L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png', {
+                    attribution: '© Stadia Maps, © Stamen Design',
+                    maxZoom: 18
+                })
             }
         };
-        // ========================================
+        
+        const OVERLAY_LAYERS = {
+            waymarkedHiking: {
+                name: 'Hiking Trails',
+                layer: () => L.tileLayer('https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png', {
+                    attribution: '© Waymarked Trails',
+                    maxZoom: 17,
+                    opacity: 0.7
+                })
+            },
+            waymarkedCycling: {
+                name: 'Cycling Routes',
+                layer: () => L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png', {
+                    attribution: '© Waymarked Trails',
+                    maxZoom: 17,
+                    opacity: 0.7
+                })
+            },
+            waymarkedMTB: {
+                name: 'MTB Trails',
+                layer: () => L.tileLayer('https://tile.waymarkedtrails.org/mtb/{z}/{x}/{y}.png', {
+                    attribution: '© Waymarked Trails',
+                    maxZoom: 17,
+                    opacity: 0.7
+                })
+            }
+        };
         
         // Haversine formula to calculate distance between two points
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -291,43 +535,267 @@
             return R * c;
         }
         
-        function initializeMap(coordinates) {
-            // Get the map container
-            const mapContainer = document.getElementById('map');
+        // Query Overpass API for nearby trails
+        async function queryNearbyTrails(coordinates) {
+            const bounds = getBounds(coordinates);
+            const query = `
+                [out:json][timeout:25];
+                (
+                  way["highway"~"path|footway|track|trail"]["name"]
+                    (${bounds.south},${bounds.west},${bounds.north},${bounds.east});
+                  way["route"~"hiking|foot|mtb|bicycle"]["name"]
+                    (${bounds.south},${bounds.west},${bounds.north},${bounds.east});
+                  relation["route"~"hiking|foot|mtb|bicycle"]["name"]
+                    (${bounds.south},${bounds.west},${bounds.north},${bounds.east});
+                );
+                out body;
+                >;
+                out skel qt;
+            `;
             
-            // Ensure container is visible
+            try {
+                const response = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST',
+                    body: query
+                });
+                const data = await response.json();
+                return processOverpassData(data);
+            } catch (error) {
+                console.error('Error querying Overpass API:', error);
+                return [];
+            }
+        }
+        
+        function getBounds(coordinates) {
+            let minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
+            coordinates.forEach(coord => {
+                minLat = Math.min(minLat, coord[0]);
+                maxLat = Math.max(maxLat, coord[0]);
+                minLon = Math.min(minLon, coord[1]);
+                maxLon = Math.max(maxLon, coord[1]);
+            });
+            // Add padding
+            const padding = 0.01; // roughly 1km
+            return {
+                north: maxLat + padding,
+                south: minLat - padding,
+                east: maxLon + padding,
+                west: minLon - padding
+            };
+        }
+        
+        function processOverpassData(data) {
+            const trails = [];
+            const nodes = {};
+            
+            // First, store all nodes
+            data.elements.forEach(element => {
+                if (element.type === 'node') {
+                    nodes[element.id] = element;
+                }
+            });
+            
+            // Process ways and relations
+            data.elements.forEach(element => {
+                if (element.type === 'way' && element.tags && element.tags.name) {
+                    const trail = {
+                        id: element.id,
+                        name: element.tags.name,
+                        type: element.tags.highway || element.tags.route || 'trail',
+                        surface: element.tags.surface || 'unknown',
+                        difficulty: element.tags['sac_scale'] || element.tags['mtb:scale'] || 'unknown',
+                        access: element.tags.access || 'yes',
+                        coordinates: []
+                    };
+                    
+                    // Build coordinates from nodes
+                    if (element.nodes) {
+                        element.nodes.forEach(nodeId => {
+                            if (nodes[nodeId]) {
+                                trail.coordinates.push([nodes[nodeId].lat, nodes[nodeId].lon]);
+                            }
+                        });
+                    }
+                    
+                    if (trail.coordinates.length > 0) {
+                        trails.push(trail);
+                    }
+                }
+            });
+            
+            return trails;
+        }
+        
+        // Match uploaded track to nearby trails
+        function findBestTrailMatch(userCoords, trails) {
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            trails.forEach(trail => {
+                if (trail.coordinates.length === 0) return;
+                
+                let matchedPoints = 0;
+                const threshold = 0.0005; // roughly 50 meters
+                
+                userCoords.forEach(userCoord => {
+                    trail.coordinates.forEach(trailCoord => {
+                        const dist = Math.sqrt(
+                            Math.pow(userCoord[0] - trailCoord[0], 2) + 
+                            Math.pow(userCoord[1] - trailCoord[1], 2)
+                        );
+                        if (dist < threshold) {
+                            matchedPoints++;
+                            return;
+                        }
+                    });
+                });
+                
+                const score = matchedPoints / userCoords.length;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = trail;
+                }
+            });
+            
+            return { trail: bestMatch, score: bestScore };
+        }
+        
+        // Display trail match information
+        function displayTrailMatch(match) {
+            const container = document.getElementById('trailMatchContent');
+            
+            if (!match || !match.trail || match.score < 0.1) {
+                container.innerHTML = `
+                    <p style="color: #718096; font-size: 0.9em;">
+                        No matching trails found in OpenStreetMap database.
+                        This might be an unmapped trail!
+                    </p>
+                    <button onclick="suggestTrailMapping()" style="margin-top: 10px; padding: 5px 10px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Contribute to OpenStreetMap
+                    </button>
+                `;
+                return;
+            }
+            
+            const percentage = Math.round(match.score * 100);
+            const trail = match.trail;
+            
+            container.innerHTML = `
+                <div class="match-indicator">
+                    <div class="match-percentage">${percentage}%</div>
+                    <div>
+                        <strong>Match Confidence</strong><br>
+                        <small>Based on GPS overlap</small>
+                    </div>
+                </div>
+                
+                <div class="trail-info">
+                    <h4>${trail.name}</h4>
+                    <div class="trail-badges">
+                        ${trail.difficulty !== 'unknown' ? `<span class="badge badge-difficulty">${trail.difficulty}</span>` : ''}
+                        ${trail.surface !== 'unknown' ? `<span class="badge badge-surface">${trail.surface}</span>` : ''}
+                        <span class="badge badge-type">${trail.type}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Add matched trail to map if good match
+            if (percentage > 30 && trail.coordinates.length > 0) {
+                if (matchedTrailPolyline) {
+                    map.removeLayer(matchedTrailPolyline);
+                }
+                
+                matchedTrailPolyline = L.polyline(trail.coordinates, {
+                    color: '#3b82f6',
+                    weight: 3,
+                    opacity: 0.6,
+                    dashArray: '10, 5'
+                }).addTo(map);
+                
+                matchedTrailPolyline.bindPopup(`<strong>${trail.name}</strong><br>Official trail route`);
+            }
+        }
+        
+        // Display nearby trails
+        function displayNearbyTrails(trails) {
+            const container = document.getElementById('nearbyTrails');
+            
+            if (trails.length === 0) {
+                container.innerHTML = '<p style="color: #718096; font-size: 0.9em;">No trails found in this area</p>';
+                return;
+            }
+            
+            const trailsHtml = trails.slice(0, 5).map(trail => `
+                <div class="trail-item" onclick="highlightTrail('${trail.id}')">
+                    <div class="trail-item-name">${trail.name}</div>
+                    <div class="trail-item-details">
+                        ${trail.type} · ${trail.surface !== 'unknown' ? trail.surface : 'Surface unknown'}
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="trail-search-results">
+                    ${trailsHtml}
+                </div>
+                <small style="color: #718096;">Found ${trails.length} trails nearby</small>
+            `;
+        }
+        
+        function suggestTrailMapping() {
+            window.open('https://www.openstreetmap.org/edit', '_blank');
+        }
+        
+        function highlightTrail(trailId) {
+            console.log('Highlighting trail:', trailId);
+        }
+        
+        function initializeMap(coordinates) {
+            const mapContainer = document.getElementById('map');
             mapContainer.style.display = 'block';
             
-            // Initialize map if not exists
             if (!map) {
                 try {
-                    // Create map with initial view
+                    // Initialize map
                     map = L.map('map', {
                         center: coordinates[0],
-                        zoom: MAP_CONFIG.defaultZoom,
-                        maxZoom: MAP_CONFIG.maxZoom,
-                        minZoom: MAP_CONFIG.minZoom,
-                        zoomAnimation: true,
-                        zoomAnimationThreshold: 4,
-                        fadeAnimation: true,
-                        markerZoomAnimation: true
+                        zoom: 13,
+                        maxZoom: 18,
+                        minZoom: 3
                     });
                     
-                    // Add tile layer
-                    const provider = TILE_PROVIDERS[MAP_CONFIG.tileProvider];
-                    L.tileLayer(provider.url, {
-                        attribution: provider.attribution,
-                        maxZoom: MAP_CONFIG.maxZoom
+                    // Create base layers
+                    const baseLayers = {};
+                    Object.entries(MAP_LAYERS).forEach(([key, config]) => {
+                        baseLayers[config.name] = config.layer();
+                    });
+                    
+                    // Create overlay layers
+                    const overlayLayers = {};
+                    Object.entries(OVERLAY_LAYERS).forEach(([key, config]) => {
+                        overlayLayers[config.name] = config.layer();
+                    });
+                    
+                    // Add default layer
+                    baseLayers['OpenTopoMap'].addTo(map);
+                    
+                    // Add layer control
+                    L.control.layers(baseLayers, overlayLayers, {
+                        position: 'topright'
                     }).addTo(map);
                     
-                    // Force a resize to ensure proper rendering
+                    // Add scale
+                    L.control.scale({
+                        imperial: true,
+                        metric: true
+                    }).addTo(map);
+                    
                     setTimeout(() => {
                         map.invalidateSize();
                     }, 100);
                     
                 } catch (error) {
                     console.error('Error initializing map:', error);
-                    alert('Error initializing map. Please refresh the page and try again.');
                     return false;
                 }
             }
@@ -337,8 +805,8 @@
         
         function addTrailToMap(coordinates) {
             // Remove old polyline if exists
-            if (polyline) {
-                map.removeLayer(polyline);
+            if (userTrackPolyline) {
+                map.removeLayer(userTrackPolyline);
             }
             
             // Clear existing markers
@@ -348,17 +816,18 @@
                 }
             });
             
-            // Add new polyline
-            polyline = L.polyline(coordinates, {
+            // Add user track polyline
+            userTrackPolyline = L.polyline(coordinates, {
                 color: '#10b981',
                 weight: 4,
-                opacity: 0.8,
-                smoothFactor: 1
+                opacity: 0.8
             }).addTo(map);
+            
+            userTrackPolyline.bindPopup('Your GPS Track');
             
             // Add start marker
             const startIcon = L.divIcon({
-                html: '<div style="background: #10b981; color: white; padding: 5px; border-radius: 50%; font-weight: bold;">S</div>',
+                html: '<div style="background: #10b981; color: white; padding: 5px; border-radius: 50%; font-weight: bold; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">S</div>',
                 iconSize: [30, 30],
                 className: 'custom-div-icon'
             });
@@ -370,7 +839,7 @@
             
             // Add end marker
             const endIcon = L.divIcon({
-                html: '<div style="background: #dc2626; color: white; padding: 5px; border-radius: 50%; font-weight: bold;">E</div>',
+                html: '<div style="background: #dc2626; color: white; padding: 5px; border-radius: 50%; font-weight: bold; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">E</div>',
                 iconSize: [30, 30],
                 className: 'custom-div-icon'
             });
@@ -380,34 +849,23 @@
                 icon: endIcon
             }).addTo(map).bindPopup('End Point');
             
-            // Fit map to trail with configurable delay
+            // Fit map to trail
             setTimeout(() => {
-                try {
-                    const bounds = polyline.getBounds();
-                    map.fitBounds(bounds, {
-                        padding: MAP_CONFIG.boundsPadding,
-                        animate: true,
-                        duration: MAP_CONFIG.zoomAnimationDuration
-                    });
-                    
-                    // Force another resize after fitting bounds
-                    setTimeout(() => {
-                        map.invalidateSize();
-                    }, 300);
-                    
-                } catch (error) {
-                    console.error('Error fitting bounds:', error);
-                    // Fallback: center on middle of trail
-                    const midPoint = coordinates[Math.floor(coordinates.length / 2)];
-                    map.setView(midPoint, MAP_CONFIG.defaultZoom);
-                }
-            }, MAP_CONFIG.fitBoundsDelay);
+                map.fitBounds(userTrackPolyline.getBounds(), {
+                    padding: [50, 50],
+                    animate: true
+                });
+                
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 300);
+            }, 100);
         }
         
-        function processCSV(results) {
+        async function processCSV(results) {
             const data = results.data;
-            const coordinates = [];
-            const elevations = [];
+            currentCoordinates = [];
+            currentElevations = [];
             let totalDistance = 0;
             let elevationGain = 0;
             let elevationLoss = 0;
@@ -421,20 +879,18 @@
                 const ele = parseFloat(row['Elevation'] || row['elevation'] || row[2]);
                 
                 if (!isNaN(lat) && !isNaN(lon)) {
-                    coordinates.push([lat, lon]);
-                    elevations.push(ele);
+                    currentCoordinates.push([lat, lon]);
+                    currentElevations.push(ele);
                     
-                    // Calculate distance
                     if (i > 0) {
                         const dist = calculateDistance(
-                            coordinates[i-1][0], coordinates[i-1][1],
+                            currentCoordinates[i-1][0], currentCoordinates[i-1][1],
                             lat, lon
                         );
                         totalDistance += dist;
                         distances.push(totalDistance);
                         
-                        // Calculate elevation change
-                        const elevChange = ele - elevations[i-1];
+                        const elevChange = ele - currentElevations[i-1];
                         if (elevChange > 0) {
                             elevationGain += elevChange;
                         } else {
@@ -444,26 +900,51 @@
                 }
             }
             
-            // Debug info
-            console.log(`Processed ${coordinates.length} coordinates`);
-            console.log(`Bounds: ${JSON.stringify(coordinates[0])} to ${JSON.stringify(coordinates[coordinates.length - 1])}`);
+            // Calculate average grade
+            const avgGrade = totalDistance > 0 ? 
+                ((elevationGain - elevationLoss) / (totalDistance * 5280) * 100).toFixed(1) : 0;
             
-            // Update statistics
+            // Update all statistics
             document.getElementById('totalDistance').textContent = totalDistance.toFixed(2);
+            document.getElementById('quickDistance').textContent = totalDistance.toFixed(2);
             document.getElementById('elevationGain').textContent = Math.round(elevationGain);
+            document.getElementById('quickElevGain').textContent = Math.round(elevationGain);
             document.getElementById('elevationLoss').textContent = Math.round(elevationLoss);
             document.getElementById('netElevation').textContent = 
-                Math.round(elevations[elevations.length - 1] - elevations[0]);
-            document.getElementById('maxElevation').textContent = Math.round(Math.max(...elevations));
-            document.getElementById('minElevation').textContent = Math.round(Math.min(...elevations));
+                Math.round(currentElevations[currentElevations.length - 1] - currentElevations[0]);
+            document.getElementById('maxElevation').textContent = Math.round(Math.max(...currentElevations));
+            document.getElementById('quickMaxElev').textContent = Math.round(Math.max(...currentElevations));
+            document.getElementById('minElevation').textContent = Math.round(Math.min(...currentElevations));
+            document.getElementById('avgGrade').textContent = avgGrade;
             
-            // Show results section first
+            // Show results
             document.getElementById('results').classList.remove('hidden');
             
-            // Initialize map with delay to ensure container is rendered
+            // Initialize map
             setTimeout(() => {
-                if (initializeMap(coordinates)) {
-                    addTrailToMap(coordinates);
+                if (initializeMap(currentCoordinates)) {
+                    addTrailToMap(currentCoordinates);
+                    
+                    // Query for nearby trails
+                    queryNearbyTrails(currentCoordinates).then(trails => {
+                        console.log('Found trails:', trails);
+                        displayNearbyTrails(trails);
+                        
+                        // Find best match
+                        const match = findBestTrailMatch(currentCoordinates, trails);
+                        displayTrailMatch(match);
+                    });
+                    
+                    // Update trail conditions (mock for now)
+                    document.getElementById('trailConditions').innerHTML = `
+                        <div style="color: #065f46;">
+                            <strong>Current Conditions:</strong><br>
+                            🌤️ Clear and dry<br>
+                            🌡️ Temperature: 72°F<br>
+                            💨 Wind: 5 mph<br>
+                            <small style="color: #718096;">Last updated: Today</small>
+                        </div>
+                    `;
                 }
             }, 100);
             
@@ -474,10 +955,9 @@
                 elevationChart.destroy();
             }
             
-            // Sample data for chart (too many points can slow it down)
             const sampleRate = Math.max(1, Math.floor(distances.length / 500));
             const sampledDistances = distances.filter((_, i) => i % sampleRate === 0);
-            const sampledElevations = elevations.filter((_, i) => i % sampleRate === 0);
+            const sampledElevations = currentElevations.filter((_, i) => i % sampleRate === 0);
             
             elevationChart = new Chart(ctx, {
                 type: 'line',
@@ -533,7 +1013,7 @@
             });
         }
         
-        // Add resize handler to fix map display issues
+        // Window resize handler
         window.addEventListener('resize', () => {
             if (map) {
                 setTimeout(() => {
