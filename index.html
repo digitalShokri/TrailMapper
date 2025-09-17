@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trail Mapper - GPS & Elevation Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .upload-section {
+            padding: 30px;
+            background: #f7f9fc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 20px;
+            background: white;
+            border: 2px dashed #cbd5e0;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .file-input-label.has-file {
+            border-color: #48bb78;
+            background: #f0fdf4;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: white;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9em;
+            color: #4a5568;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .stat-unit {
+            font-size: 0.8em;
+            color: #718096;
+            margin-left: 5px;
+        }
+        
+        #map {
+            height: 500px;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container {
+            padding: 30px;
+            background: #f7f9fc;
+        }
+        
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #elevationChart {
+            max-height: 300px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Trail Mapper</h1>
+            <p>Visualize GPS trails with distance and elevation analysis</p>
+        </div>
+        
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="csvFile" accept=".csv">
+                <label for="csvFile" class="file-input-label" id="fileLabel">
+                    <strong>Choose CSV file</strong> or drag it here<br>
+                    <small>Format: Latitude, Longitude, Elevation</small>
+                </label>
+            </div>
+        </div>
+        
+        <div id="results" class="hidden">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Distance</h3>
+                    <div class="stat-value">
+                        <span id="totalDistance">0</span>
+                        <span class="stat-unit">mi</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Elevation Gain</h3>
+                    <div class="stat-value">
+                        <span id="elevationGain">0</span>
+                        <span class="stat-unit">ft</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Elevation Loss</h3>
+                    <div class="stat-value">
+                        <span id="elevationLoss">0</span>
+                        <span class="stat-unit">ft</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Net Elevation</h3>
+                    <div class="stat-value">
+                        <span id="netElevation">0</span>
+                        <span class="stat-unit">ft</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Max Elevation</h3>
+                    <div class="stat-value">
+                        <span id="maxElevation">0</span>
+                        <span class="stat-unit">ft</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Min Elevation</h3>
+                    <div class="stat-value">
+                        <span id="minElevation">0</span>
+                        <span class="stat-unit">ft</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="map"></div>
+            
+            <div class="chart-container">
+                <div class="chart-wrapper">
+                    <canvas id="elevationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let map = null;
+        let polyline = null;
+        let elevationChart = null;
+        
+        // ========== ADJUSTABLE MAP OPTIONS ==========
+        const MAP_CONFIG = {
+            // Initial zoom level (1-18, higher = more zoomed in)
+            defaultZoom: 13,
+            
+            // Padding around the trail bounds (pixels)
+            boundsPadding: [50, 50],
+            
+            // Maximum zoom level allowed
+            maxZoom: 18,
+            
+            // Minimum zoom level allowed
+            minZoom: 3,
+            
+            // Delay before fitting bounds (milliseconds)
+            fitBoundsDelay: 100,
+            
+            // Animation duration for zoom
+            zoomAnimationDuration: 0.25,
+            
+            // Alternative tile providers (uncomment one to use)
+            tileProvider: 'openstreetmap', // options: 'openstreetmap', 'cartodb', 'stamen'
+        };
+        
+        // Tile provider URLs
+        const TILE_PROVIDERS = {
+            openstreetmap: {
+                url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attribution: '© OpenStreetMap contributors'
+            },
+            cartodb: {
+                url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                attribution: '© CartoDB'
+            },
+            stamen: {
+                url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
+                attribution: '© Stamen Design'
+            }
+        };
+        // ========================================
+        
+        // Haversine formula to calculate distance between two points
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 3959; // Radius of Earth in miles
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+        
+        function initializeMap(coordinates) {
+            // Get the map container
+            const mapContainer = document.getElementById('map');
+            
+            // Ensure container is visible
+            mapContainer.style.display = 'block';
+            
+            // Initialize map if not exists
+            if (!map) {
+                try {
+                    // Create map with initial view
+                    map = L.map('map', {
+                        center: coordinates[0],
+                        zoom: MAP_CONFIG.defaultZoom,
+                        maxZoom: MAP_CONFIG.maxZoom,
+                        minZoom: MAP_CONFIG.minZoom,
+                        zoomAnimation: true,
+                        zoomAnimationThreshold: 4,
+                        fadeAnimation: true,
+                        markerZoomAnimation: true
+                    });
+                    
+                    // Add tile layer
+                    const provider = TILE_PROVIDERS[MAP_CONFIG.tileProvider];
+                    L.tileLayer(provider.url, {
+                        attribution: provider.attribution,
+                        maxZoom: MAP_CONFIG.maxZoom
+                    }).addTo(map);
+                    
+                    // Force a resize to ensure proper rendering
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('Error initializing map:', error);
+                    alert('Error initializing map. Please refresh the page and try again.');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        function addTrailToMap(coordinates) {
+            // Remove old polyline if exists
+            if (polyline) {
+                map.removeLayer(polyline);
+            }
+            
+            // Clear existing markers
+            map.eachLayer((layer) => {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
+            
+            // Add new polyline
+            polyline = L.polyline(coordinates, {
+                color: '#10b981',
+                weight: 4,
+                opacity: 0.8,
+                smoothFactor: 1
+            }).addTo(map);
+            
+            // Add start marker
+            const startIcon = L.divIcon({
+                html: '<div style="background: #10b981; color: white; padding: 5px; border-radius: 50%; font-weight: bold;">S</div>',
+                iconSize: [30, 30],
+                className: 'custom-div-icon'
+            });
+            
+            L.marker(coordinates[0], {
+                title: 'Start',
+                icon: startIcon
+            }).addTo(map).bindPopup('Start Point');
+            
+            // Add end marker
+            const endIcon = L.divIcon({
+                html: '<div style="background: #dc2626; color: white; padding: 5px; border-radius: 50%; font-weight: bold;">E</div>',
+                iconSize: [30, 30],
+                className: 'custom-div-icon'
+            });
+            
+            L.marker(coordinates[coordinates.length - 1], {
+                title: 'End',
+                icon: endIcon
+            }).addTo(map).bindPopup('End Point');
+            
+            // Fit map to trail with configurable delay
+            setTimeout(() => {
+                try {
+                    const bounds = polyline.getBounds();
+                    map.fitBounds(bounds, {
+                        padding: MAP_CONFIG.boundsPadding,
+                        animate: true,
+                        duration: MAP_CONFIG.zoomAnimationDuration
+                    });
+                    
+                    // Force another resize after fitting bounds
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 300);
+                    
+                } catch (error) {
+                    console.error('Error fitting bounds:', error);
+                    // Fallback: center on middle of trail
+                    const midPoint = coordinates[Math.floor(coordinates.length / 2)];
+                    map.setView(midPoint, MAP_CONFIG.defaultZoom);
+                }
+            }, MAP_CONFIG.fitBoundsDelay);
+        }
+        
+        function processCSV(results) {
+            const data = results.data;
+            const coordinates = [];
+            const elevations = [];
+            let totalDistance = 0;
+            let elevationGain = 0;
+            let elevationLoss = 0;
+            const distances = [0];
+            
+            // Process data
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                const lat = parseFloat(row['Latitude'] || row['latitude'] || row[0]);
+                const lon = parseFloat(row['Longitude'] || row['longitude'] || row[1]);
+                const ele = parseFloat(row['Elevation'] || row['elevation'] || row[2]);
+                
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    coordinates.push([lat, lon]);
+                    elevations.push(ele);
+                    
+                    // Calculate distance
+                    if (i > 0) {
+                        const dist = calculateDistance(
+                            coordinates[i-1][0], coordinates[i-1][1],
+                            lat, lon
+                        );
+                        totalDistance += dist;
+                        distances.push(totalDistance);
+                        
+                        // Calculate elevation change
+                        const elevChange = ele - elevations[i-1];
+                        if (elevChange > 0) {
+                            elevationGain += elevChange;
+                        } else {
+                            elevationLoss += Math.abs(elevChange);
+                        }
+                    }
+                }
+            }
+            
+            // Debug info
+            console.log(`Processed ${coordinates.length} coordinates`);
+            console.log(`Bounds: ${JSON.stringify(coordinates[0])} to ${JSON.stringify(coordinates[coordinates.length - 1])}`);
+            
+            // Update statistics
+            document.getElementById('totalDistance').textContent = totalDistance.toFixed(2);
+            document.getElementById('elevationGain').textContent = Math.round(elevationGain);
+            document.getElementById('elevationLoss').textContent = Math.round(elevationLoss);
+            document.getElementById('netElevation').textContent = 
+                Math.round(elevations[elevations.length - 1] - elevations[0]);
+            document.getElementById('maxElevation').textContent = Math.round(Math.max(...elevations));
+            document.getElementById('minElevation').textContent = Math.round(Math.min(...elevations));
+            
+            // Show results section first
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Initialize map with delay to ensure container is rendered
+            setTimeout(() => {
+                if (initializeMap(coordinates)) {
+                    addTrailToMap(coordinates);
+                }
+            }, 100);
+            
+            // Create elevation chart
+            const ctx = document.getElementById('elevationChart').getContext('2d');
+            
+            if (elevationChart) {
+                elevationChart.destroy();
+            }
+            
+            // Sample data for chart (too many points can slow it down)
+            const sampleRate = Math.max(1, Math.floor(distances.length / 500));
+            const sampledDistances = distances.filter((_, i) => i % sampleRate === 0);
+            const sampledElevations = elevations.filter((_, i) => i % sampleRate === 0);
+            
+            elevationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sampledDistances.map(d => d.toFixed(2)),
+                    datasets: [{
+                        label: 'Elevation (ft)',
+                        data: sampledElevations,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Elevation Profile',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Distance (miles)'
+                            },
+                            ticks: {
+                                callback: function(value, index) {
+                                    return index % Math.floor(sampledDistances.length / 10) === 0 ? 
+                                           parseFloat(this.getLabelForValue(value)).toFixed(1) : '';
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Elevation (feet)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Add resize handler to fix map display issues
+        window.addEventListener('resize', () => {
+            if (map) {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            }
+        });
+        
+        // File input handler
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileLabel').textContent = `Selected: ${file.name}`;
+                document.getElementById('fileLabel').classList.add('has-file');
+                
+                Papa.parse(file, {
+                    header: true,
+                    dynamicTyping: true,
+                    complete: processCSV,
+                    error: function(error) {
+                        alert('Error parsing CSV: ' + error.message);
+                    }
+                });
+            }
+        });
+        
+        // Drag and drop support
+        const fileLabel = document.getElementById('fileLabel');
+        const fileInput = document.getElementById('csvFile');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            fileLabel.style.borderColor = '#10b981';
+            fileLabel.style.background = '#f0fdf4';
+        }
+        
+        function unhighlight(e) {
+            fileLabel.style.borderColor = '#cbd5e0';
+            fileLabel.style.background = 'white';
+        }
+        
+        fileLabel.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            const event = new Event('change', { bubbles: true });
+            fileInput.dispatchEvent(event);
+        }
+    </script>
+</body>
+</html>
